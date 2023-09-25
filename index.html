@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Connect and Retrieve Data</title>
+    <!-- Include the Web3.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Connected Wallet Address</h1>
+    <p id="walletAddress">The connected wallet address will be displayed here.</p>
+    <button id="connectButton">Connect to MetaMask</button>
+
+    <h2>Retrieved Data</h2>
+    <p id="retrievedData">Click "Retrieve Data" to fetch data from the smart contract.</p>
+    <button id="retrieveDataButton">Retrieve Data</button>
+
+    <script>
+        // Contract address and ABI (replace with your contract's address and ABI)
+        var contractAddress = "0xec7ef9d1e7ebf6403c84c925d1d1e1e66938bc07";
+        var contractABI = [
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "retrieve",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        // Check if Web3 is available in the browser environment
+        if (typeof web3 !== 'undefined') {
+            // Create a Web3 object
+            var web3js = new Web3(web3.currentProvider);
+
+            // Check if a wallet is already connected
+            web3js.eth.getAccounts().then(function(accounts) {
+                if (accounts.length > 0) {
+                    var walletAddress = accounts[0];
+                    document.getElementById('walletAddress').textContent = "Connected Wallet Address: " + walletAddress;
+                } else {
+                    document.getElementById('walletAddress').textContent = "No Wallet Connected.";
+                }
+            });
+
+            // Add a click event listener to the "Connect to MetaMask" button
+            document.getElementById('connectButton').addEventListener('click', function() {
+                // Request the user to connect their MetaMask wallet
+                web3js.eth.requestAccounts().then(function(accounts) {
+                    var walletAddress = accounts[0];
+                    document.getElementById('walletAddress').textContent = "Connected Wallet Address: " + walletAddress;
+                }).catch(function(error) {
+                    console.error(error);
+                    document.getElementById('walletAddress').textContent = "Error connecting to MetaMask.";
+                });
+            });
+
+            // Add a click event listener to the "Retrieve Data" button
+            document.getElementById('retrieveDataButton').addEventListener('click', function() {
+                var contract = new web3js.eth.Contract(contractABI, contractAddress);
+                // Call the "retrieve" function of the smart contract
+                contract.methods.retrieve().call().then(function(result) {
+                    document.getElementById('retrievedData').textContent = "Retrieved Data: " + result;
+                }).catch(function(error) {
+                    console.error(error);
+                    document.getElementById('retrievedData').textContent = "Error retrieving data from the smart contract.";
+                });
+            });
+        } else {
+            document.getElementById('walletAddress').textContent = "Web3 not found. Make sure you have MetaMask or a compatible Ethereum wallet installed and active.";
+        }
+    </script>
+</body>
+</html>
